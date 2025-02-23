@@ -1,0 +1,10 @@
+invoke
+black
+pylint
+flask
+flask-injector
+pytest
+pytest-cov
+pytest-timeout
+setuptools
+inject
