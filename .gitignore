@@ -1,2 +1,4 @@
 .idea
 .venv
+client/dist
+static

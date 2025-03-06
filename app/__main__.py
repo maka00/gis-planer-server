@@ -25,4 +25,4 @@ if __name__ == "__main__":
     #     app=server_app,
     #     modules=[lambda binder: binder.bind(streampipeline.StreamPipeline, sp)],
     # )
-    server_app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
+    server_app.run(host="0.0.0.0", port=port, debug=True, threaded=True)
