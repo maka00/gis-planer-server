@@ -2,7 +2,8 @@
 import glob
 import shutil
 import os
-from invoke import task
+from invoke import Collection, task
+import docker.tasks as docker_backend
 
 
 @task
@@ -51,3 +52,16 @@ def run(ctx):
     Run the application.
     """
     ctx.run("python -m app")
+
+## Namespaces
+ns = Collection()
+ns.add_task(lint)
+ns.add_task(format)
+ns.add_task(format_check)
+ns.add_task(test)
+ns.add_task(test_cov)
+ns.add_task(run)
+
+docker_be_ns = Collection.from_module(docker_backend, name="docker-backend")
+ns.add_collection(docker_be_ns)
+namespace = ns

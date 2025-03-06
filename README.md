@@ -13,3 +13,32 @@ Invoke is used as task runner. See [invoke](https://www.pyinvoke.org/)
 pip install invoke
 source <(inv --print-completion-script zsh)
 ```
+
+# Backend services
+
+The backend consists of a [postgis](https://postgis.net/) geodb and a [valhalla router](https://github.com/valhalla/valhalla) service. Both are started with docker-compose.
+First the geodata needs to be downloaded and clipped to the area of interest. The data is stored in the `data` folder of the `docker`folder.
+The geodata is downloaded from [geofabrik](https://www.geofabrik.de)  and clipped with the `osmconvert` tool. The clipped data is stored in the `data` folder of the `docker` folder.
+
+```bash
+inv docker-backend.download
+inv docker-backend.clip
+```
+
+Use the invoke task `docker-backend` to start the services.
+
+```bash
+inv docker-backend.start
+```
+
+The services can be tested via the `docker-backend.test` task.
+
+```bash
+inv docker-backend.test
+```
+
+To stop the backend services use the `docker-backend.stop` task.
+
+```bash
+inv docker-backend.stop
+```

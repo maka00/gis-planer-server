@@ -25,14 +25,11 @@ def create_app() -> Flask:
         template_folder="../static",
     )
 
-    @application.route("/hello")
+    @application.route("/hello", methods=['GET'])
     def hello():
+        logging.info("got hello")
         return "ok"
 
-    #@application.route("/")
-    #def index():
-    #    # serve all files from the folder client/dist
-    #    return send_from_directory("client/dist", "path")
     @application.route('/<path:path>', methods=['GET'])
     def static_proxy(path):
       return send_from_directory(application.static_folder, path)
