@@ -24,12 +24,12 @@ def download(c):
 def clip(c):
     """Clip the ROI"""
     c.run(
-        f"docker run -v {os.getcwd()}/data:/data iboates/osmium:latest extract --overwrite -b {BBox} /data/map.osm.pbf -o /data/map-clipped.osm.pbf"
+        f"docker run -v {os.getcwd()}/docker/data:/data iboates/osmium:latest extract --overwrite -b {BBox} /data/map.osm.pbf -o /data/map-clipped.osm.pbf"
     )
-    os.makedirs(f"{os.getcwd()}/data/routing", exist_ok=True)
+    os.makedirs(f"{os.getcwd()}/docker/data/routing", exist_ok=True)
     os.rename(
-        f"{os.getcwd()}/data/map-clipped.osm.pbf",
-        f"{os.getcwd()}/data/routing/map-clipped.osm.pbf",
+        f"{os.getcwd()}/docker/data/map-clipped.osm.pbf",
+        f"{os.getcwd()}/docker/data/routing/map-clipped.osm.pbf",
     )
 
 
