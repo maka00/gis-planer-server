@@ -50,7 +50,8 @@
               "./node_modules/leaflet/dist/leaflet.css"
             ],
             "scripts": [
-              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+              "node_modules/feather-icons/dist/feather.js"
             ],
             "stylePreprocessorOptions": {
               "sass": {

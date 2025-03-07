@@ -1,5 +1,7 @@
-import {AfterViewInit, Component} from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import * as L from 'leaflet'
+import {Location, LocationType} from '../../shared/models/Location';
+import {MapControlService} from '../map-control.service';
 
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
 const iconUrl = 'assets/marker-icon.png';
@@ -22,15 +24,39 @@ L.Marker.prototype.options.icon = iconDefault;
   templateUrl: './map.component.html',
   styleUrl: './map.component.scss'
 })
-export class MapComponent implements AfterViewInit {
-  private map: any;
-  constructor() {
+export class MapComponent implements OnInit, AfterViewInit {
+  private map!: L.Map;
+  private destinationMarkers: L.Marker[] = [];
+
+  constructor(private mapControlService: MapControlService) {
+  }
+
+  ngOnInit(): void {
+    this.mapControlService.getSubject().subscribe((value) => {
+      console.log(value)
+      if (value === "setClear") {
+        this.destinationMarkers.forEach(marker => {
+          this.map.removeLayer(marker)
+        })
+        this.destinationMarkers = []
+      } else if (value === "setPoint") {
+        this.map.on('click', (event: L.LeafletMouseEvent) => {
+          console.log(event)
+          let lt: LocationType = LocationType.destination;
+          let loc = new Location("1", lt, event.latlng.lat, event.latlng.lng)
+          let marker = L.marker(event.latlng)
+          marker.addTo(this.map)
+          this.destinationMarkers.push(marker)
+        })
+      } else if (value === "idle") {
+        this.map.off('click')
+      }
+    })
   }
 
   private initMap(): void {
     this.map = L.map('map', {
-      //center: [ 39.8282, -98.5795 ],
-      center: [46.623888,14.307641],
+      center: [46.623888, 14.307641],
       zoom: 30
     });
 
@@ -39,9 +65,9 @@ export class MapComponent implements AfterViewInit {
       minZoom: 3,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
-    var marker = L.marker([46.623888,14.307641]).addTo(this.map);
     tiles.addTo(this.map);
   }
+
   ngAfterViewInit() {
     this.initMap()
   }
