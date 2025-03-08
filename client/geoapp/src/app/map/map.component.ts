@@ -27,6 +27,8 @@ L.Marker.prototype.options.icon = iconDefault;
 export class MapComponent implements OnInit, AfterViewInit {
   private map!: L.Map;
   private destinationMarkers: L.Marker[] = [];
+  private markerID = 0;
+  private state = "idle";
 
   constructor(private mapControlService: MapControlService) {
   }
@@ -34,24 +36,51 @@ export class MapComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.mapControlService.getSubject().subscribe((value) => {
       console.log(value)
-      if (value === "setClear") {
-        this.destinationMarkers.forEach(marker => {
-          this.map.removeLayer(marker)
-        })
-        this.destinationMarkers = []
-      } else if (value === "setPoint") {
+      this.changeState(value);
+    })
+  }
+
+  private changeState(value: string) {
+    switch (value) {
+      case "startRoute":
+        console.log("Start Route")
+        break;
+      case "setPoint":
         this.map.on('click', (event: L.LeafletMouseEvent) => {
           console.log(event)
           let lt: LocationType = LocationType.destination;
-          let loc = new Location("1", lt, event.latlng.lat, event.latlng.lng)
+          let loc = new Location(this.markerID.toString(), lt, event.latlng.lat, event.latlng.lng)
+          this.markerID += 1
           let marker = L.marker(event.latlng)
           marker.addTo(this.map)
           this.destinationMarkers.push(marker)
         })
-      } else if (value === "idle") {
+        this.state = "setPoint";
+        console.log("Set Point")
+        L.DomUtil.addClass(this.map.getContainer(), 'crosshair-cursor-enabled');
+        break;
+      case "setVehicle":
+        console.log("Set Vehicle")
+        break;
+      case "setClear":
+        this.destinationMarkers.forEach(marker => {
+          this.map.removeLayer(marker)
+        })
+        this.destinationMarkers = []
+        break;
+      case "setAbort":
+        console.log("Set Abort")
+        break;
+      case "idle":
+        console.log("Idle")
+        L.DomUtil.removeClass(this.map.getContainer(), 'crosshair-cursor-enabled');
         this.map.off('click')
-      }
-    })
+        break;
+      default:
+        console.log("Unknown Command")
+        L.DomUtil.removeClass(this.map.getContainer(), 'crosshair-cursor-enabled');
+        break;
+    }
   }
 
   private initMap(): void {

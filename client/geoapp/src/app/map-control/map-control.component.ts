@@ -49,6 +49,7 @@ export class MapControlComponent implements OnInit, AfterViewInit {
   setClear() {
     console.log("Set Clear")
     this.mapControlService.updateSubject("setClear");
+    this.mapControlService.updateSubject("idle");
   }
 
   setAbort() {
