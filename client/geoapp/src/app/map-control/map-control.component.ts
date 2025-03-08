@@ -32,7 +32,8 @@ export class MapControlComponent implements OnInit, AfterViewInit {
 
   setPoint() {
     console.log("Set Point")
-    if (this.state === "idle") {
+    if (this.state !== "setPoint") {
+      this.mapControlService.updateSubject("idle");
       this.mapControlService.updateSubject("setPoint");
       this.state = "setPoint";
     } else {
@@ -43,13 +44,20 @@ export class MapControlComponent implements OnInit, AfterViewInit {
 
   setVehicle() {
     console.log("Set Vehicle")
-    this.mapControlService.updateSubject("setVehicle");
+    if (this.state !== "setVehicle") {
+      this.mapControlService.updateSubject("idle");
+      this.mapControlService.updateSubject("setVehicle");
+    } else {
+      this.mapControlService.updateSubject("idle");
+      this.state = "idle";
+    }
   }
 
   setClear() {
     console.log("Set Clear")
-    this.mapControlService.updateSubject("setClear");
     this.mapControlService.updateSubject("idle");
+    this.mapControlService.updateSubject("setClear");
+    this.state = "idle";
   }
 
   setAbort() {
