@@ -2,6 +2,7 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import * as L from 'leaflet'
 import {LocationType} from '../../shared/models/Location';
 import {MapControlService} from '../map-control.service';
+import {CircleMarkerOptions} from 'leaflet';
 
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
 const iconUrl = 'assets/marker-icon.png';
@@ -22,10 +23,23 @@ interface CustomMarkerOptions extends L.MarkerOptions {
   id: string;
   type: LocationType;
 }
-class CustomMarker extends L.Marker{
+class OriginMarker extends L.Marker{
   public id: string = '';
   public type: LocationType = LocationType.destination;
   constructor(latLng: L.LatLngExpression, options?: CustomMarkerOptions) {
+    super(latLng, options);
+    this.id = options?.id || '';
+    this.type = options?.type || LocationType.destination;
+  }
+}
+interface DestinationMarkerOptions extends L.CircleMarkerOptions {
+  id: string;
+  type: LocationType;
+}
+class DestinationMarker extends L.CircleMarker {
+  public id: string = '';
+  public type: LocationType = LocationType.destination;
+  constructor(latLng: L.LatLngExpression, options: DestinationMarkerOptions) {
     super(latLng, options);
     this.id = options?.id || '';
     this.type = options?.type || LocationType.destination;
@@ -40,10 +54,10 @@ class CustomMarker extends L.Marker{
 })
 export class MapComponent implements OnInit, AfterViewInit {
   private map!: L.Map;
-  private destinationMarkers: L.Marker[] = [];
+  private destinationMarkers: DestinationMarker[] = [];
+  private originMarkers!: OriginMarker | null;
   private markerID = 0;
   private state = "idle";
-
   constructor(private mapControlService: MapControlService) {
   }
 
@@ -64,7 +78,7 @@ export class MapComponent implements OnInit, AfterViewInit {
         this.map.on('click', (event: L.LeafletMouseEvent) => {
           console.log(event)
           this.markerID += 1
-          let marker = new CustomMarker(event.latlng, {draggable: true, id: 'marker-' + this.markerID.toString(), type: LocationType.destination})
+          let marker = new DestinationMarker(event.latlng, {radius: 10, id: 'marker-' + this.markerID.toString(), type: LocationType.destination})
           marker.addTo(this.map)
           this.destinationMarkers.push(marker)
         })
@@ -77,9 +91,10 @@ export class MapComponent implements OnInit, AfterViewInit {
         this.map.on('click', (event: L.LeafletMouseEvent) => {
           console.log(event)
           this.markerID += 1
-          let marker = new CustomMarker(event.latlng, {draggable: true, id: 'origin-' + this.markerID.toString(), type: LocationType.origin})
+          let marker = new OriginMarker(event.latlng, {draggable: true, id: 'origin-' + this.markerID.toString(), type: LocationType.origin})
           marker.addTo(this.map)
-          this.destinationMarkers.push(marker)
+          this.originMarkers = marker;
+          //this.destinationMarkers.push(marker)
         })
         this.state = "setVehicle";
         console.log("Set Vehicle")
@@ -90,6 +105,10 @@ export class MapComponent implements OnInit, AfterViewInit {
           this.map.removeLayer(marker)
         })
         this.destinationMarkers = []
+        if (this.originMarkers) {
+          this.map.removeLayer(this.originMarkers)
+        }
+        this.originMarkers = null
         this.markerID = 0;
         break;
       case "setAbort":
@@ -130,21 +149,32 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   private getGeoJson(): void {
-    const features = this.destinationMarkers.map(marker  => {
+    let result = [];
+    for (const marker of this.destinationMarkers) {
       const latLng = marker.getLatLng();
-      return {
+      result.push( {
         type: "Feature",
         geometry: {
           type: "Point",
           coordinates: [latLng.lng, latLng.lat]
         },
         properties: {
-          id: (marker.options  as CustomMarker).id,
-          type: (marker.options as CustomMarker).type
+          id: marker.id,
+          type: marker.type
         }
-      };
-    });
-
-    console.log(features);
+      });
+    }
+    result.push({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [this.originMarkers?.getLatLng().lng, this.originMarkers?.getLatLng().lat]
+        },
+        properties: {
+          id: this.originMarkers?.id,
+          type: this.originMarkers?.type
+        }
+    })
+    console.log(result);
   }
 }
