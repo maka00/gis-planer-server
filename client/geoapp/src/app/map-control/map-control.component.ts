@@ -1,6 +1,7 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import * as feather from 'feather-icons';
 import {MapControlService} from '../map-control.service';
+import {States} from '../../shared/models/states';
 
 @Component({
   selector: 'app-map-control',
@@ -11,7 +12,7 @@ import {MapControlService} from '../map-control.service';
 
 
 export class MapControlComponent implements OnInit, AfterViewInit {
-  private state = "idle";
+  private state : States = States.idle;
 
   constructor(private mapControlService: MapControlService) {
   }
@@ -26,42 +27,42 @@ export class MapControlComponent implements OnInit, AfterViewInit {
 
   startRoute() {
     console.log("Start Route")
-    this.mapControlService.updateSubject("startRoute");
+    this.mapControlService.updateSubject(States.startRoute);
 
   }
 
   setPoint() {
     console.log("Set Point")
-    if (this.state !== "setPoint") {
-      this.mapControlService.updateSubject("idle");
-      this.mapControlService.updateSubject("setPoint");
-      this.state = "setPoint";
+    if (this.state !== States.setPoint) {
+      this.mapControlService.updateSubject(States.idle);
+      this.mapControlService.updateSubject(States.setPoint);
+      this.state = States.setPoint;
     } else {
-      this.mapControlService.updateSubject("idle");
-      this.state = "idle";
+      this.mapControlService.updateSubject(States.idle);
+      this.state = States.idle;
     }
   }
 
   setVehicle() {
     console.log("Set Vehicle")
-    if (this.state !== "setVehicle") {
-      this.mapControlService.updateSubject("idle");
-      this.mapControlService.updateSubject("setVehicle");
+    if (this.state !== States.setVehicle) {
+      this.mapControlService.updateSubject(States.idle);
+      this.mapControlService.updateSubject(States.setVehicle);
     } else {
-      this.mapControlService.updateSubject("idle");
-      this.state = "idle";
+      this.mapControlService.updateSubject(States.idle);
+      this.state = States.idle;
     }
   }
 
   setClear() {
     console.log("Set Clear")
-    this.mapControlService.updateSubject("idle");
-    this.mapControlService.updateSubject("setClear");
-    this.state = "idle";
+    this.mapControlService.updateSubject(States.idle);
+    this.mapControlService.updateSubject(States.setClear);
+    this.state = States.idle;
   }
 
   setAbort() {
     console.log("Set Abort")
-    this.mapControlService.updateSubject("setAbort");
+    this.mapControlService.updateSubject(States.setAbort);
   }
 }

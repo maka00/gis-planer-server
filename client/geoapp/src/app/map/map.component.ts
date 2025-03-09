@@ -1,8 +1,8 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import * as L from 'leaflet'
-import {LocationType} from '../../shared/models/Location';
+import {LocationType} from '../../shared/models/location';
 import {MapControlService} from '../map-control.service';
-import {CircleMarkerOptions} from 'leaflet';
+import {States} from '../../shared/models/states';
 
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
 const iconUrl = 'assets/marker-icon.png';
@@ -57,7 +57,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   private destinationMarkers: DestinationMarker[] = [];
   private originMarkers!: OriginMarker | null;
   private markerID = 0;
-  private state = "idle";
+  private state : States= States.idle;
   constructor(private mapControlService: MapControlService) {
   }
 
@@ -68,13 +68,13 @@ export class MapComponent implements OnInit, AfterViewInit {
     })
   }
 
-  private changeState(value: string) {
+  private changeState(value: States) {
     switch (value) {
-      case "startRoute":
+      case States.startRoute:
         this.getGeoJson()
         console.log("Start Route")
         break;
-      case "setPoint":
+      case States.setPoint:
         this.map.on('click', (event: L.LeafletMouseEvent) => {
           console.log(event)
           this.markerID += 1
@@ -82,11 +82,11 @@ export class MapComponent implements OnInit, AfterViewInit {
           marker.addTo(this.map)
           this.destinationMarkers.push(marker)
         })
-        this.state = "setPoint";
+        this.state = States.setPoint;
         console.log("Set Point")
         L.DomUtil.addClass(this.map.getContainer(), 'crosshair-cursor-enabled');
         break;
-      case "setVehicle":
+      case States.setVehicle:
         console.log("Set Vehicle")
         this.map.on('click', (event: L.LeafletMouseEvent) => {
           console.log(event)
@@ -94,13 +94,12 @@ export class MapComponent implements OnInit, AfterViewInit {
           let marker = new OriginMarker(event.latlng, {draggable: true, id: 'origin-' + this.markerID.toString(), type: LocationType.origin})
           marker.addTo(this.map)
           this.originMarkers = marker;
-          //this.destinationMarkers.push(marker)
         })
-        this.state = "setVehicle";
+        this.state = States.setVehicle;
         console.log("Set Vehicle")
         L.DomUtil.addClass(this.map.getContainer(), 'crosshair-cursor-enabled');
         break;
-      case "setClear":
+      case States.setClear:
         this.destinationMarkers.forEach(marker => {
           this.map.removeLayer(marker)
         })
@@ -111,10 +110,10 @@ export class MapComponent implements OnInit, AfterViewInit {
         this.originMarkers = null
         this.markerID = 0;
         break;
-      case "setAbort":
+      case States.setAbort:
         console.log("Set Abort")
         break;
-      case "idle":
+      case States.idle:
         console.log("Idle")
         L.DomUtil.removeClass(this.map.getContainer(), 'crosshair-cursor-enabled');
         this.map.off('click')
