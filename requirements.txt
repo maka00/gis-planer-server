@@ -8,3 +8,5 @@ pytest-cov
 pytest-timeout
 setuptools
 inject
+geojson
+ortools
