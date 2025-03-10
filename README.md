@@ -42,3 +42,7 @@ To stop the backend services use the `docker-backend.stop` task.
 ```bash
 inv docker-backend.stop
 ```
+# Valhalla router
+
+The valhalla router has a bug in the distance matrix genartion. It is possible that some entries are `None` instead of
+a correct value. the `docker/data/routing/valhalla.json` file has to be set to `"source_to_target_algorithm": "timedistancematrix"` (after the first start when it is generated)

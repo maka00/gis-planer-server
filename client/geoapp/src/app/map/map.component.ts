@@ -3,6 +3,8 @@ import * as L from 'leaflet'
 import {LocationType} from '../../shared/models/location';
 import {MapControlService} from '../map-control.service';
 import {States} from '../../shared/models/states';
+import {SolverService} from '../solver.service';
+import {GeoJSON} from 'leaflet';
 
 const iconRetinaUrl = 'assets/marker-icon-2x.png';
 const iconUrl = 'assets/marker-icon.png';
@@ -58,7 +60,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   private originMarkers!: OriginMarker | null;
   private markerID = 0;
   private state : States= States.idle;
-  constructor(private mapControlService: MapControlService) {
+  constructor(private mapControlService: MapControlService, private solverService: SolverService) {
   }
 
   ngOnInit(): void {
@@ -148,7 +150,8 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   private getGeoJson(): void {
-    let result = [];
+
+    let result : GeoJSON.Feature[] = [];
     for (const marker of this.destinationMarkers) {
       const latLng = marker.getLatLng();
       result.push( {
@@ -163,17 +166,26 @@ export class MapComponent implements OnInit, AfterViewInit {
         }
       });
     }
-    result.push({
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [this.originMarkers?.getLatLng().lng, this.originMarkers?.getLatLng().lat]
-        },
-        properties: {
-          id: this.originMarkers?.id,
-          type: this.originMarkers?.type
-        }
+    if (this.originMarkers) {
+      result.push({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [this.originMarkers.getLatLng().lng, this.originMarkers.getLatLng().lat]
+          },
+          properties: {
+            id: this.originMarkers?.id,
+            type: this.originMarkers?.type
+          }
+      })
+    }
+    let final : GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: result
+    }
+    console.log(final);
+    this.solverService.solve(final).subscribe((data) => {
+      console.log(data)
     })
-    console.log(result);
   }
 }

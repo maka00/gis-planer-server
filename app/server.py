@@ -1,16 +1,18 @@
 """
 Server module.
 """
-
+import http.client
 import os
 import logging
 import threading
 import time
 from email.policy import default
+from readline import backend
 
-from flask import Flask, Response, send_from_directory
+import geojson as geojson
+from flask import Flask, Response, send_from_directory, jsonify, request
 from flask_injector import FlaskInjector
-
+from app.backend import valhalla
 
 def create_app() -> Flask:
     """
@@ -29,6 +31,20 @@ def create_app() -> Flask:
     def hello():
         logging.info("got hello")
         return "ok"
+
+    @application.route("/api/v1/solve", methods=['POST'])
+    def solve():
+        logging.info("got solve")
+        gj = geojson.loads(request.data)
+        for feature in gj['features']:
+            logging.info(feature)
+
+        router = valhalla.Valhalla()
+        dm = router.get_transport_matrix(gj)
+        logging.info(dm)
+        response = jsonify({"status": "OK"})
+        response.status_code = http.client.OK
+        return response
 
     @application.route('/<path:path>', methods=['GET'])
     def static_proxy(path):
