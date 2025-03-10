@@ -3,6 +3,9 @@ import logging
 import json
 import http.client
 
+from flask_injector import request
+
+
 class Valhalla:
     def __init__(self):
         pass
@@ -31,6 +34,14 @@ class Valhalla:
             distance_matrix.append(columns)
         print(distance_matrix)
         return distance_matrix
+    def get_shortest_path(self, features: geojson.FeatureCollection):
+        stations = []
+        for feature in features['features']:
+            station = feature['geometry']['coordinates']
+            stations.append(self.create_location(station[1], station[0]))
+        request = {"locations": stations ,"costing":"auto","units":"km"}
+        data = self.call_valhalla_routing_api(request)
+        print(data)
 
     def generate_destinations(self, features) -> list:
         locations = []
@@ -58,6 +69,19 @@ class Valhalla:
         headers = {'Content-type': 'application/json'}
         payload = json.dumps(locations)
         conn.request("GET", "/sources_to_targets", payload, headers)
+        res = conn.getresponse()
+        data = res.read()
+        return data
+    def call_valhalla_routing_api(self, locations) -> bytes:
+        """
+        Call Valhalla REST API.
+        :param locations:
+        :return:
+        """
+        conn = http.client.HTTPConnection("localhost", 8002)
+        headers = {'Content-type': 'application/json'}
+        payload = json.dumps(locations)
+        conn.request("GET", "/optimized_route", payload, headers)
         res = conn.getresponse()
         data = res.read()
         return data

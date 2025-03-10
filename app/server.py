@@ -12,7 +12,7 @@ from readline import backend
 import geojson as geojson
 from flask import Flask, Response, send_from_directory, jsonify, request
 from flask_injector import FlaskInjector
-from app.backend import valhalla
+from app.backend import valhalla, planer
 
 def create_app() -> Flask:
     """
@@ -42,6 +42,14 @@ def create_app() -> Flask:
         router = valhalla.Valhalla()
         dm = router.get_transport_matrix(gj)
         logging.info(dm)
+        planner = planer.Solver()
+        plan = planner.solve(dm)
+        logging.info(plan)
+        plan_locations = []
+        for idx in plan:
+            plan_locations.append(gj['features'][idx])
+        to_route_features = geojson.FeatureCollection(plan_locations)
+        router.get_shortest_path(to_route_features)
         response = jsonify({"status": "OK"})
         response.status_code = http.client.OK
         return response
@@ -59,5 +67,8 @@ def create_app() -> Flask:
     return application
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.DEBUG, format="%(asctime)s %(levelname)s %(filename)s %(message)s"
+    )
     app = create_app()
     app.run(debug=True, port=8000)
