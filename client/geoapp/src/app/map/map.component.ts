@@ -60,6 +60,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   private originMarkers!: OriginMarker | null;
   private markerID = 0;
   private state : States= States.idle;
+  private routeToRender!: GeoJSON | null;
   constructor(private mapControlService: MapControlService, private solverService: SolverService) {
   }
 
@@ -70,6 +71,38 @@ export class MapComponent implements OnInit, AfterViewInit {
     })
   }
 
+  // Valhalla gives us a polyline that is encoded in a way that is not standard
+  // code taken from https://valhalla.github.io/demos/polyline/
+  // description see https://valhalla.github.io/valhalla/decoding/
+  private render_route(encoded_route: any, mul: any) {
+  var inv = 1.0 / mul;
+  var decoded = [];
+  var previous = [0,0];
+  var i = 0;
+  //for each byte
+  while(i < encoded_route.length) {
+    //for each coord (lat, lon)
+    var ll = [0,0]
+    for(var j = 0; j < 2; j++) {
+      var shift = 0;
+      var byte = 0x20;
+      //keep decoding bytes until you have this coord
+      while(byte >= 0x20) {
+        byte = encoded_route.charCodeAt(i++) - 63;
+        ll[j] |= (byte & 0x1f) << shift;
+        shift += 5;
+      }
+      //add previous offset to get final value and remember for next one
+      ll[j] = previous[j] + (ll[j] & 1 ? ~(ll[j] >> 1) : (ll[j] >> 1));
+      previous[j] = ll[j];
+    }
+    //scale by precision and chop off long coords also flip the positions so
+    //its the far more standard lon,lat instead of lat,lon
+    decoded.push([ll[1] * inv,ll[0] * inv]);
+  }
+  //hand back the list of coordinates
+  return decoded;
+  };
   private changeState(value: States) {
     switch (value) {
       case States.startRoute:
@@ -110,6 +143,10 @@ export class MapComponent implements OnInit, AfterViewInit {
           this.map.removeLayer(this.originMarkers)
         }
         this.originMarkers = null
+        if (this.routeToRender) {
+          this.map.removeLayer(this.routeToRender)
+        }
+        this.routeToRender = null;
         this.markerID = 0;
         break;
       case States.setAbort:
@@ -184,8 +221,56 @@ export class MapComponent implements OnInit, AfterViewInit {
       features: result
     }
     console.log(final);
-    this.solverService.solve(final).subscribe((data) => {
+    this.solverService.solve(final).subscribe((data: any) => {
       console.log(data)
+      if (data === null) {
+        return
+      }
+      let full_route: GeoJSON.Feature[] = [];
+      for (let i = 0; i < data.trip.legs.length; i++) {
+        let path = data.trip.legs[i].shape.replace(/\\\\/g, '\\');
+        let route = this.render_route(path, 1e6);
+        full_route.push({
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: route
+          },
+          properties: {}
+        })
+      }
+      let json = {
+        type: 'FeatureCollection',
+        features: full_route
+      }
+      /*
+      let path = data.trip.legs[0].shape.replace(/\\\\/g, '\\');
+      let route = this.render_route(path, 1e6);
+      console.log(route);
+      let json = {
+        type: 'FeatureCollection',
+        features: [{
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: route
+          },
+          properties: {}
+        }]
+      }
+       */
+      // @ts-ignore
+      let geojson = L.geoJson(json,{ style: function(feature) {
+          return {
+            fillColor: feature?.properties.fill,
+            color: '#9900CC',
+            opacity: 0.75,
+            weight: 7,
+          };
+        }
+    });
+      this.routeToRender = geojson;
+      this.routeToRender.addTo(this.map);
     })
   }
 }

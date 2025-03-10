@@ -49,9 +49,11 @@ def create_app() -> Flask:
         for idx in plan:
             plan_locations.append(gj['features'][idx])
         to_route_features = geojson.FeatureCollection(plan_locations)
-        router.get_shortest_path(to_route_features)
+        optimal_route = router.get_shortest_path(to_route_features)
         response = jsonify({"status": "OK"})
         response.status_code = http.client.OK
+        response.headers["Content-Type"] = "application/json"
+        response.data = optimal_route
         return response
 
     @application.route('/<path:path>', methods=['GET'])

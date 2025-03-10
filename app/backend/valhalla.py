@@ -42,6 +42,7 @@ class Valhalla:
         request = {"locations": stations ,"costing":"auto","units":"km"}
         data = self.call_valhalla_routing_api(request)
         print(data)
+        return data
 
     def generate_destinations(self, features) -> list:
         locations = []
