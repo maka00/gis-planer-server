@@ -61,6 +61,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   private markerID = 0;
   private state : States= States.idle;
   private routeToRender!: GeoJSON | null;
+  public static opacity = 0.95;
   constructor(private mapControlService: MapControlService, private solverService: SolverService) {
   }
 
@@ -148,6 +149,7 @@ export class MapComponent implements OnInit, AfterViewInit {
         }
         this.routeToRender = null;
         this.markerID = 0;
+        MapComponent.opacity = 0.95;
         break;
       case States.setAbort:
         console.log("Set Abort")
@@ -261,10 +263,11 @@ export class MapComponent implements OnInit, AfterViewInit {
        */
       // @ts-ignore
       let geojson = L.geoJson(json,{ style: function(feature) {
+          MapComponent.opacity = MapComponent.opacity * 0.8;
           return {
             fillColor: feature?.properties.fill,
             color: '#9900CC',
-            opacity: 0.75,
+            opacity: MapComponent.opacity,
             weight: 7,
           };
         }
