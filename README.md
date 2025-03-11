@@ -7,9 +7,18 @@ service for the routing. The [postgis](https://postgis.net/) geodb is created bu
 
 The application tries to find the optimal route between a vehicle and its destination by solving a traveling salesman problem.
 
+First select the destination points (blue circles):
+
+![Select destination points](docs/images/route-plan.jpg)
+
+By clicking on the left marker list the corresponding marker is selected.
+
+After setting the vehicle start point the route can be calculated, by clicking on the `Start route` button.
+
+![Select destination points](docs/images/route-plan-solved.jpg)
 
 # Setup and Tools
-## create virtualenviroment
+## create a virtualenviroment
 
 ```bash
 python3 -m venv venv
