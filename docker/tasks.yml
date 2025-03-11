@@ -1,0 +1,50 @@
+version: '3'
+
+tasks:
+  download:
+    desc: "Download osm map"
+    cmds:
+      - mkdir -p data
+      - cd data && wget -O map.osm.pbf https://download.geofabrik.de/europe/austria-latest.osm.pbf
+
+  clip:
+    desc: "Clip the ROI"
+    cmds:
+      - docker run -v $PWD/data:/data iboates/osmium:latest extract --overwrite -b 12.16,47.17,15.11,46.30 /data/map.osm.pbf -o /data/map-clipped.osm.pbf
+      - mkdir -p data/routing
+      - mv data/map-clipped.osm.pbf data/routing/map-clipped.osm.pbf
+
+  start:
+    desc: "Start geodb and router"
+    cmds:
+      - docker compose -f backend-services.yml up -d
+
+  stop:
+    desc: "Stop geodb and router"
+    cmds:
+      - docker compose -f backend-services.yml down
+
+  start_full:
+    desc: "Start full system"
+    cmds:
+      - export IMAGE_PREFIX=$DCR
+      - docker compose -f full-system.yml up -d
+
+  stop_full:
+    desc: "Stop full system"
+    cmds:
+      - export IMAGE_PREFIX=$DCR
+      - docker compose -f full-system.yml down
+
+  test:
+    desc: "Perform a routing test"
+    cmds:
+      - echo "Drive: "
+      - curl http://localhost:8002/optimized_route --data '{"locations":[{"lat":46.606352,"lon":14.254266},{"lat":46.592602,"lon":14.272296}],"costing":"auto","units":"km"}'
+      - echo "\nDistance Matrix: "
+      - curl http://localhost:8002/sources_to_targets --data '{"sources":[{"lat":46.606352,"lon":14.254266},{"lat":46.592602,"lon":14.272296}],"targets":[{"lat":46.606352,"lon":14.254266},{"lat":46.592602,"lon":14.272296}],"costing":"auto","units":"km"}'
+
+  clean:
+    desc: "Clean routing directory"
+    cmds:
+      - sudo rm -r data/routing/*.tar data/routing/*.txt data/routing/*.json data/routing/valhalla_tiles

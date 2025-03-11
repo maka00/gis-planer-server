@@ -1,0 +1,28 @@
+---
+services:
+  router:
+    image: 'ghcr.io/gis-ops/docker-valhalla/valhalla:latest'
+    environment:
+      - server_threads=12
+    ports:
+      - '8002:8002'
+    restart: unless-stopped
+    volumes:
+      - $PWD/data/routing:/custom_files
+    networks:
+      - routing_network
+  planner:
+    depends_on:
+      - router
+    image: ${IMAGE_PREFIX}gis-planer-server:1.0
+    ports:
+      - '8000:8000'
+    expose:
+      - '8000'
+    environment:
+      - ROUTER_SERVER=router
+    networks:
+      - routing_network
+networks:
+  routing_network:
+    driver: bridge

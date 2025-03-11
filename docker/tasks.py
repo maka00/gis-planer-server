@@ -8,6 +8,7 @@ import subprocess
 
 BBox = "12.16,47.17,15.11,46.30"
 
+docker_registry = os.getenv('DCR')
 
 @task
 def download(c):
@@ -39,12 +40,25 @@ def start(c):
     with c.cd("docker"):
         c.run("docker compose -f backend-services.yml up -d", hide=False)
 
-
 @task
 def stop(c):
     """Stop geodb and router"""
     with c.cd("docker"):
         c.run("docker compose -f backend-services.yml down", hide=False)
+
+@task
+def start_full(c):
+    """Start geodb and router"""
+    with c.cd("docker"):
+        os.environ['IMAGE_PREFIX'] = docker_registry
+        c.run("docker compose -f full-system.yml up -d", hide=False)
+
+@task
+def stop_full(c):
+    """Start geodb and router"""
+    with c.cd("docker"):
+        os.environ['IMAGE_PREFIX'] = docker_registry
+        c.run("docker compose -f full-system.yml down", hide=False)
 
 
 @task

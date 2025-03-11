@@ -5,6 +5,9 @@ import os
 from invoke import Collection, task
 import docker.tasks as docker_backend
 
+docker_registry = os.getenv('DCR')
+app_version = "1.0"
+image_name = f"{docker_registry}gis-planer-server:{app_version}"
 
 @task
 def lint(ctx):
@@ -60,7 +63,12 @@ def run_ui(ctx):
     """
     with ctx.cd("client/geoapp"):
         ctx.run("ng serve --proxy-config proxy.conf.json")
-
+@task
+def build_container(ctx):
+    """
+    Build the container
+    """
+    ctx.run(f"docker build -t {image_name} .")
 ## Namespaces
 ns = Collection()
 ns.add_task(lint)
@@ -70,6 +78,7 @@ ns.add_task(test)
 ns.add_task(test_cov)
 ns.add_task(run)
 ns.add_task(run_ui)
+ns.add_task(build_container)
 
 docker_be_ns = Collection.from_module(docker_backend, name="docker-backend")
 ns.add_collection(docker_be_ns)

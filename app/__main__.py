@@ -17,8 +17,11 @@ if __name__ == "__main__":
     )
     logging.info("Starting server...")
     port = int(os.environ.get("PORT", 8000))
-
-    server_app = create_app()
+    valhalla_server = "localhost"
+    if os.environ.get("ROUTER_SERVER"):
+        valhalla_server = os.environ.get("ROUTER_SERVER")
+    logging.info(f"routing server is on: {valhalla_server}")
+    server_app = create_app(valhalla_server)
 
     time.sleep(1)
     # FlaskInjector(

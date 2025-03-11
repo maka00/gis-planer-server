@@ -7,7 +7,9 @@ from flask_injector import request
 
 
 class Valhalla:
-    def __init__(self):
+
+    def __init__(self, server: str = "localhost"):
+        self.server = server
         pass
 
     def get_transport_matrix(self, features: geojson.FeatureCollection) -> list[list[float]]:
@@ -36,7 +38,7 @@ class Valhalla:
         for feature in features['features']:
             station = feature['geometry']['coordinates']
             stations.append(self.create_location(station[1], station[0]))
-        request = {"locations": stations ,"costing":"auto","units":"km"}
+        request = {"locations": stations, "costing": "auto", "units": "km"}
         data = self.call_valhalla_routing_api(request)
         return data
 
@@ -47,7 +49,7 @@ class Valhalla:
             locations.append(self.create_location(location[1], location[0]))
         return locations
 
-    def create_location(self, lat: float, lon:float):
+    def create_location(self, lat: float, lon: float):
         """
         Create location object.
         :param lat:
@@ -62,20 +64,21 @@ class Valhalla:
         :param locations:
         :return:
         """
-        conn = http.client.HTTPConnection("localhost", 8002)
+        conn = http.client.HTTPConnection(self.server, 8002)
         headers = {'Content-type': 'application/json'}
         payload = json.dumps(locations)
         conn.request("GET", "/sources_to_targets", payload, headers)
         res = conn.getresponse()
         data = res.read()
         return data
+
     def call_valhalla_routing_api(self, locations) -> bytes:
         """
         Call Valhalla REST API.
         :param locations:
         :return:
         """
-        conn = http.client.HTTPConnection("localhost", 8002)
+        conn = http.client.HTTPConnection(self.server, 8002)
         headers = {'Content-type': 'application/json'}
         payload = json.dumps(locations)
         conn.request("GET", "/optimized_route", payload, headers)

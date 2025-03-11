@@ -3,19 +3,13 @@ Server module.
 """
 import http.client
 import json
-import os
 import logging
-import threading
-import time
-from email.policy import default
-from readline import backend
+import os
 
 import geojson as geojson
 from flask import Flask, Response, send_from_directory, jsonify, request
-from flask_injector import FlaskInjector
 from app.backend import valhalla, planer
-
-def create_app() -> Flask:
+def create_app(valhalla_server: str) -> Flask:
     """
     Create Flask app.
     Response to HTTP requests on /hello
@@ -40,7 +34,7 @@ def create_app() -> Flask:
         for feature in gj['features']:
             logging.info(feature)
 
-        router = valhalla.Valhalla()
+        router = valhalla.Valhalla(valhalla_server)
         dm = router.get_transport_matrix(gj)
         logging.info(dm)
         planner = planer.Solver()
@@ -73,5 +67,9 @@ if __name__ == '__main__':
     logging.basicConfig(
         level=logging.DEBUG, format="%(asctime)s %(levelname)s %(filename)s %(message)s"
     )
-    app = create_app()
+    valhalla_server = "localhost"
+    if os.environ.get("ROUTER_SERVER"):
+        valhalla_server = os.environ.get("ROUTER_SERVER")
+    logging.info(f"routing server is on: {valhalla_server}")
+    app = create_app(valhalla_server)
     app.run(debug=True, port=8000)
