@@ -34,6 +34,7 @@ class Valhalla:
             distance_matrix.append(columns)
         print(distance_matrix)
         return distance_matrix
+
     def get_shortest_path(self, features: geojson.FeatureCollection):
         stations = []
         for feature in features['features']:
