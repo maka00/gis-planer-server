@@ -1,5 +1,13 @@
 # Transport scheduling planer and router
 
+The goal of this project is to experiment with leaflet, google or-tools and valhalla routing. 
+The project is a web application that allows to plan transport schedules and routes for a fleet of vehicles. 
+The application is based on the [leaflet](https://leafletjs.com/) library for the map and the [valhalla](https://github.com/valhalla/valhalla)
+service for the routing. The [postgis](https://postgis.net/) geodb is created but currently not used.
+
+The application tries to find the optimal route between a vehicle and its destination by solving a traveling salesman problem.
+
+
 # Setup and Tools
 ## create virtualenviroment
 
@@ -44,5 +52,5 @@ inv docker-backend.stop
 ```
 # Valhalla router
 
-The valhalla router has a bug in the distance matrix genartion. It is possible that some entries are `None` instead of
+The valhalla router docker image has a bug in the distance matrix generation. It is possible that some entries are `None` instead of
 a correct value. the `docker/data/routing/valhalla.json` file has to be set to `"source_to_target_algorithm": "timedistancematrix"` (after the first start when it is generated)

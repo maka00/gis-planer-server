@@ -2,12 +2,12 @@
 <div class="container-fluid">
 <div class="row">
   <!-- Sidebar -->
-  <div class="col-md-1 sidebar">
-   <app-map-control></app-map-control>
+  <div class="col-md-2 sidebar">
+   <app-map-control [destinationMarkers]="mapComponent.destinationMarkers" [originMarker]="mapComponent.originMarkers"></app-map-control>
   </div>
   <!-- Map -->
-  <div class="col-md-11">
-    <app-map></app-map>
+  <div class="col-md-10">
+    <app-map #mapComponent></app-map>
   </div>
 </div>
 </div>

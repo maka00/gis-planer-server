@@ -1,0 +1,35 @@
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Adjust the gap between buttons as needed */
+}
+
+.button-container button {
+  width: 100%;
+}
+
+
+.marker-list {
+  list-style-type: none; /* Remove bullet points */
+  padding: 0;
+}
+
+.marker-list li {
+  margin-bottom: 5px; /* Adjust spacing between list items as needed */
+  border: 1px solid #ccc; /* Add border around each marker block */
+  padding: 5px; /* Add padding inside the border */
+  border-radius: 5px; /* Optional: Add rounded corners */
+}
+
+.marker-list li.selected {
+  background-color: #f0f0f0; /* Highlight the selected list item */
+}
+
+.marker-id {
+  font-weight: bold;
+}
+
+.marker-coordinates {
+  font-size: 0.8em; /* Reduce font size for coordinates */
+  display: block; /* Ensure coordinates are on a new line */
+}

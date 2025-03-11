@@ -19,20 +19,16 @@ class Valhalla:
 
         locations = self.generate_destinations(features)
         request = {"sources": locations, "targets": locations, "costing": "auto", "units": "km"}
-        print(json.dumps(request))
         data = self.call_valhalla_rest_api(request)
         json_data = json.loads(data)
         transport_table = json_data['sources_to_targets']
-        print(transport_table)
         # create a list of dictionaries with from -> to -> distance
         distance_matrix = []
         for row in transport_table:
             columns = []
             for column in row:
-                print(f"From: {column['from_index']} To: {column['to_index']} Distance: {column['distance']}")
                 columns.append(column['distance'])
             distance_matrix.append(columns)
-        print(distance_matrix)
         return distance_matrix
 
     def get_shortest_path(self, features: geojson.FeatureCollection):
@@ -42,7 +38,6 @@ class Valhalla:
             stations.append(self.create_location(station[1], station[0]))
         request = {"locations": stations ,"costing":"auto","units":"km"}
         data = self.call_valhalla_routing_api(request)
-        print(data)
         return data
 
     def generate_destinations(self, features) -> list:

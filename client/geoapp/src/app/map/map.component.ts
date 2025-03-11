@@ -15,8 +15,8 @@ import {MapRenderUtils, OriginMarker, DestinationMarker} from './map.render.util
 })
 export class MapComponent implements OnInit, AfterViewInit {
   private map!: L.Map;
-  private destinationMarkers: DestinationMarker[] = [];
-  private originMarkers!: OriginMarker | null;
+  public destinationMarkers: DestinationMarker[] = [];
+  public originMarkers: OriginMarker | null = null;
   private markerID = 0;
   private routeToRender!: GeoJSON | null;
   public static opacity = 0.95;
@@ -26,7 +26,6 @@ export class MapComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.mapControlService.getSubject().subscribe((value) => {
-      console.log(value)
       this.changeState(value);
     })
   }
@@ -34,12 +33,12 @@ export class MapComponent implements OnInit, AfterViewInit {
   private changeState(value: States) {
     switch (value) {
       case States.startRoute:
+        this.clearRoute()
         this.getGeoJson()
         console.log("Start Route")
         break;
       case States.setPoint:
         this.map.on('click', (event: L.LeafletMouseEvent) => {
-          console.log(event)
           this.markerID += 1
           let marker = new DestinationMarker(event.latlng, {
             radius: 10,
@@ -55,7 +54,6 @@ export class MapComponent implements OnInit, AfterViewInit {
       case States.setVehicle:
         console.log("Set Vehicle")
         this.map.on('click', (event: L.LeafletMouseEvent) => {
-          console.log(event)
           this.markerID += 1
           let marker = new OriginMarker(event.latlng, {
             draggable: true,
@@ -65,7 +63,6 @@ export class MapComponent implements OnInit, AfterViewInit {
           marker.addTo(this.map)
           this.originMarkers = marker;
         })
-        console.log("Set Vehicle")
         L.DomUtil.addClass(this.map.getContainer(), 'crosshair-cursor-enabled');
         break;
       case States.setClear:
@@ -77,10 +74,7 @@ export class MapComponent implements OnInit, AfterViewInit {
           this.map.removeLayer(this.originMarkers)
         }
         this.originMarkers = null
-        if (this.routeToRender) {
-          this.map.removeLayer(this.routeToRender)
-        }
-        this.routeToRender = null;
+        this.clearRoute();
         this.markerID = 0;
         MapComponent.opacity = 0.95;
         break;
@@ -97,6 +91,14 @@ export class MapComponent implements OnInit, AfterViewInit {
         L.DomUtil.removeClass(this.map.getContainer(), 'crosshair-cursor-enabled');
         break;
     }
+  }
+
+  private clearRoute() {
+    if (this.routeToRender) {
+      this.map.removeLayer(this.routeToRender)
+    }
+    this.routeToRender = null;
+    MapComponent.opacity = 0.95;
   }
 
   private initMap(): void {
@@ -118,7 +120,6 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   onClick(event: any) {
-    console.log(event)
   }
 
   private getGeoJson(): void {
@@ -155,18 +156,25 @@ export class MapComponent implements OnInit, AfterViewInit {
       type: "FeatureCollection",
       features: result
     }
-    console.log(final);
     this.solverService.solve(final).subscribe((data: any) => {
       if (data === null) {
         return;
       }
-      let json = this.createGeoJsonFeature(data);
+      console.log(data);
+      this.sortMarkers(data.plan);
+      let json = this.createGeoJsonFeature(data.route);
       this.routeToRender = this.createGeoJsonLayer(json);
       this.routeToRender.addTo(this.map);
     });
 
   }
-
+  private sortMarkers(order: number[]) {
+    let sortedMarkers: DestinationMarker[] = [];
+    for (let i = 1; i < order.length; i++) {
+      sortedMarkers.push(this.destinationMarkers[order[i]]);
+    }
+    this.destinationMarkers = sortedMarkers
+  }
   private createGeoJsonFeature(data: any): GeoJSON.FeatureCollection {
     let full_route: GeoJSON.Feature[] = [];
     for (let i = 0; i < data.trip.legs.length; i++) {

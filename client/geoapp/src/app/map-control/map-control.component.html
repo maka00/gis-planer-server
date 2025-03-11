@@ -1,26 +1,44 @@
-<div>
-  <span
+<div class="button-container mt-2">
+  <button
     type="button"
-    (click)="startRoute()"
-  >
-   <div
-     data-feather="play"></div>
-  </span>
-  <span
-    type="button"
+    class="btn btn-primary"
+    [class.active]="state === States.setPoint"
     (click)="setPoint()">
-    <div data-feather="map-pin"></div>
-  </span>
-  <span
+    Set destination
+  </button>
+  <button
     type="button"
+    class="btn btn-primary"
+    [class.active]="state === States.setVehicle"
     (click)="setVehicle()">
-   <div data-feather="truck"></div>
-  </span>
-  <span
+    Set vehicle
+  </button>
+  <button
     type="button"
+    class="btn btn-danger"
     (click)="setClear()"
   >
-    <div
-      data-feather="chevrons-left"></div>
-  </span>
+  Clear
+  </button>
+</div>
+<div>
+  <!-- List of markers -->
+  <hr/>
+  <ul class="marker-list">
+    <li *ngFor="let marker of destinationMarkers" (click)="highlightMarker(marker)" [class.selected]="marker === selectedMarker">
+      <span class="marker-id">{{ marker.id }}</span>
+      <span class="marker-coordinates">{{ marker.getLatLng().lat }}, {{ marker.getLatLng().lng }}</span>
+    </li>
+  </ul>
+  <hr/>
+<div class="button-container">
+  <button
+    type="button"
+    class="btn btn-primary"
+    [disabled]="!canStartRoute()"
+    (click)="startRoute()"
+  >
+  Start route
+  </button>
+</div>
 </div>
