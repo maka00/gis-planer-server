@@ -63,3 +63,30 @@ inv docker-backend.stop
 
 The valhalla router docker image has a bug in the distance matrix generation. It is possible that some entries are `None` instead of
 a correct value. the `docker/data/routing/valhalla.json` file has to be set to `"source_to_target_algorithm": "timedistancematrix"` (after the first start when it is generated)
+
+# Architecture
+
+The following shows the architecture of the application. The web client requests map tiles from the OpenStreetMap service and optimal paths from the App Server. The App Server 
+requests the transport matrix. This transport matrix is used to solve the traveling salesman problem
+and the shortest path from the Valhalla Service.
+
+```mermaid
+graph TD
+    subgraph Internet
+        OSM[OpenStreetMap Service]
+    end
+
+    subgraph WebClient
+        WC[WebClient]
+    end
+
+    subgraph Backend
+        AS[App Server]
+        VS[Valhalla Service]
+    end
+
+    WC -->|Requests map tiles| OSM
+    WC -->|Requests optimal path| AS
+    AS -->|Requests transport matrix| VS
+    AS -->|Requests shortest path| VS
+```
